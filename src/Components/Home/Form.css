@@ -1,0 +1,67 @@
+.form-wrapper {
+  margin-top: 50px;
+  display: flex;
+
+  align-items: center;
+  margin-bottom: 50px;
+}
+
+.polarization-selection {
+  display: flex;
+  align-items: center;
+}
+
+.polar-buttons {
+  width: 100px;
+  margin-right: 10px;
+  border: 0.5px solid rgba(127, 255, 212, 0.5); /* Adjust border size and color */
+  background-color: rgba(127, 255, 212, 0.5);
+  box-shadow: 2px 4px 4px rgba(255, 255, 255, 0.2); /* Adding box shadow for raised effect */
+}
+
+.polar-label {
+  margin-right: 67px;
+  color: rgb(2, 2, 2);
+}
+
+.frequency-selection {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  color: rgb(12, 12, 12);
+}
+
+.frequency-label {
+  margin-right: 20px;
+}
+
+.polar-buttons-selected {
+  background-color: rgb(148, 172, 248);
+  color: rgb(8, 8, 8);
+}
+
+.view-selection {
+  margin-top: 20px;
+  margin-left: 170px;
+}
+
+.mesh-selection {
+  margin-top: 20px;
+  margin-left: 170px;
+}
+
+.selections-wrapper {
+  margin-left: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.title-wrapper {
+  margin-left: 50px;
+  display: flex;
+}
+
+.logo {
+  width: 400px;
+  height: 100px;
+}
