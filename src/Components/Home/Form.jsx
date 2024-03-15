@@ -1,5 +1,6 @@
 import "./Form.css";
 import logo from "../../assets/logo.png";
+import ReactSwitch from "react-switch";
 
 export default function Form({
   selectedFrequency,
@@ -9,6 +10,8 @@ export default function Form({
   setSelectedView,
   selectedMesh,
   setSelectedMesh,
+  showPower,
+  togglePower,
 }) {
   const frequencyButtons = Object.keys(formattedData["Phi"] || {}).map(
     (frequency) => (
@@ -69,6 +72,10 @@ export default function Form({
           >
             Open3d (Python)
           </button>
+        </div>
+        <div className="power-switch">
+          <ReactSwitch checked={showPower} onChange={togglePower} />
+          <p>Show power readout</p>
         </div>
       </div>
     </div>

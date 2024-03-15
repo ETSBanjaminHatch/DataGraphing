@@ -2,6 +2,8 @@ import "./Home.css";
 import { useEffect, useState, useMemo } from "react";
 import { latestData } from "../../assets/20180228";
 import Form from "./Form";
+import ThreejsMesh from "./ThreejsMesh";
+import PointGraph from "./PointGraph";
 
 //Home landing page that will show the form for graph selections and graphs.
 export default function Home() {
@@ -9,7 +11,9 @@ export default function Home() {
   const [selectedView, setSelectedView] = useState("graph");
   const [selectedData, setSelectedData] = useState();
   const [selectedMesh, setSelectedMesh] = useState("ThreeJS");
+  const [showPower, setShowPower] = useState(false);
 
+  const polarizations = ["Phi", "Theta", "Total"];
   //Memoise the data to prevent unecessary re-renders
   const formattedData = useMemo(() => {
     return latestData.reduce((acc, obj) => {
@@ -32,6 +36,11 @@ export default function Home() {
       return acc;
     }, {});
   }, [latestData]);
+
+  function togglePower() {
+    const changedPower = !showPower;
+    setShowPower(changedPower);
+  }
 
   function changeFrequency(selection) {
     setSelectedFrequency(selection);
@@ -64,7 +73,44 @@ export default function Home() {
         setSelectedView={setSelectedView}
         selectedMesh={selectedMesh}
         setSelectedMesh={setSelectedMesh}
+        showPower={showPower}
+        togglePower={togglePower}
       />
+      <div className="data-wrapper">
+        {selectedView === "graph" &&
+          selectedData &&
+          selectedFrequency &&
+          polarizations.map((pol) => {
+            const dataForPolarization =
+              selectedData[pol] && selectedData[pol][selectedFrequency];
+            if (!dataForPolarization) return null;
+
+            if (selectedMesh === "ThreeJS") {
+              return (
+                <ThreejsMesh
+                  key={pol}
+                  pol={pol}
+                  selectedData={dataForPolarization}
+                  showPower={showPower}
+                />
+              );
+            } else if (selectedMesh === "Open3d") {
+              return (
+                <ThreejsMesh
+                  key={pol}
+                  pol={pol}
+                  selectedData={dataForPolarization}
+                />
+              );
+            }
+          })}
+        {selectedView === "table" && selectedData && selectedFrequency && (
+          <ThreejsMesh
+            selectedData={selectedData}
+            selectedFrequency={selectedFrequency}
+          />
+        )}
+      </div>
     </div>
   );
 }
