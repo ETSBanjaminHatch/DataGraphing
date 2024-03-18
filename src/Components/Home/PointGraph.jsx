@@ -17,6 +17,112 @@ export default function PointGraph({ selectedData, pol }) {
   const sceneRef = useRef(null);
   const pointsRef = useRef(null);
 
+  function interpolateBetweenTwoPoints(p1, p2, steps) {
+    let interpolatedPoints = [];
+    if (!p1 || !p2) {
+      console.warn("Undefined point encountered in interpolation:", { p1, p2 });
+      return interpolatedPoints; // Return an empty array if either point is undefined
+    }
+    for (let step = 1; step < steps; step++) {
+      const t = step / steps;
+      const interpolatedTheta = lerp(p1.theta, p2.theta, t);
+      const interpolatedPhi = lerp(p1.phi, p2.phi, t);
+      const interpolatedRadius = lerp(p1.radius, p2.radius, t);
+      interpolatedPoints.push(
+        new PointRThetaPhi(
+          interpolatedPhi,
+          interpolatedTheta,
+          interpolatedRadius
+        )
+      );
+    }
+    return interpolatedPoints;
+  }
+
+  function generateInterpolatedGrid(points, thetaSteps, phiSteps) {
+    let finalInterpolated = [];
+
+    // Assuming points are sorted and organized by theta then phi
+    const thetaGrouped = groupByTheta(points);
+    const thetaValues = Object.keys(thetaGrouped)
+      .map(Number)
+      .sort((a, b) => a - b);
+
+    // Interpolate across theta for each phi
+    thetaValues.forEach((theta, index) => {
+      if (index < thetaValues.length - 1) {
+        const nextTheta = thetaValues[index + 1];
+        const currentPoints = thetaGrouped[theta];
+        const nextPoints = thetaGrouped[nextTheta];
+
+        // Now, interpolate between currentPoints and nextPoints for each phi
+        currentPoints.forEach((point, pointIndex) => {
+          if (pointIndex < currentPoints.length - 1) {
+            // Check to ensure matching next point exists
+            const nextPoint = nextPoints[pointIndex];
+            // Interpolate between point and nextPoint across theta
+            const interpolatedThetaPoints = interpolateBetweenTwoPoints(
+              point,
+              nextPoint,
+              thetaSteps
+            );
+            finalInterpolated.push(...interpolatedThetaPoints);
+          }
+        });
+      }
+    });
+
+    // Now, handle phi interpolation separately to ensure phiSteps are accounted for
+    const allPhiValues = [...new Set(points.map((p) => p.phi))].sort(
+      (a, b) => a - b
+    );
+
+    allPhiValues.forEach((phi, index) => {
+      if (index < allPhiValues.length - 1) {
+        const nextPhi = allPhiValues[index + 1];
+        // Filter points for current and next phi values, sorted by theta to align
+        const currentPhiPoints = points
+          .filter((p) => p.phi === phi)
+          .sort((a, b) => a.theta - b.theta);
+        const nextPhiPoints = points
+          .filter((p) => p.phi === nextPhi)
+          .sort((a, b) => a.theta - b.theta);
+
+        // Ensure we have matching pairs to interpolate between
+        currentPhiPoints.forEach((point, pointIndex) => {
+          if (pointIndex < currentPhiPoints.length - 1) {
+            const matchingNextPoint = nextPhiPoints[pointIndex]; // Assuming matching index
+            // Interpolate between point and matchingNextPoint across phi
+            const interpolatedPhiPoints = interpolateBetweenTwoPoints(
+              point,
+              matchingNextPoint,
+              phiSteps
+            );
+            finalInterpolated.push(...interpolatedPhiPoints);
+          }
+        });
+      }
+    });
+
+    return finalInterpolated;
+  }
+
+  function lerp(start, end, t) {
+    return start * (1 - t) + end * t;
+  }
+
+  function groupByTheta(points) {
+    let groups = {};
+    points.forEach((point) => {
+      const key = point.theta;
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(point);
+    });
+    return groups;
+  }
+
   function createTextLabel(text, position) {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
@@ -84,6 +190,7 @@ export default function PointGraph({ selectedData, pol }) {
     scene.add(yLabel);
     scene.add(zLabel);
   }
+
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -154,9 +261,8 @@ export default function PointGraph({ selectedData, pol }) {
         point.radius -= minR;
       });
     }
-
-    let interP = interpolatePoints(newpoints, 7.5);
-
+    let interP = generateInterpolatedGrid(newpoints, 5, 5);
+    console.log(interP);
     let cartesianData = interP.map((point) => {
       const r = point.radius;
       const thetaRadians = THREE.MathUtils.degToRad(point.theta);

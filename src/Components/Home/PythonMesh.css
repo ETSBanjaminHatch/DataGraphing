@@ -4,11 +4,11 @@
   color: rgb(238, 29, 29);
 }
 
-.meshgraph-wrapper {
+.pythonmeshgraph-wrapper {
   display: flex;
 }
 
-.threejs-wrapper {
+.pythonmesh-wrapper {
   border: 1px solid rgb(3, 3, 3);
   margin-left: 28px;
   background-color: rgb(240, 248, 255);

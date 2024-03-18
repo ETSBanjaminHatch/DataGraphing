@@ -1,0 +1,46 @@
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+table {
+  border-collapse: collapse;
+  width: auto; /* Adjust based on layout */
+  table-layout: fixed;
+  font-size: 10px; /* Slightly reduced font size */
+  background-color: white;
+  color: black;
+}
+
+th,
+td {
+  border: 1px solid black;
+  text-align: center;
+  padding: 2px; /* Reduced padding */
+  overflow: auto; /* Scroll overflow for cells */
+  max-width: 100px; /* Example max-width for columns */
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+.table-wrapper th,
+.table-wrapper td {
+  padding: 4px; /* Adjust padding */
+  text-align: left;
+  border: 1px solid #0c0c0c;
+}
+
+.table-wrapper th {
+  background-color: #b3d6c3;
+}
+
+.tables-wrapper {
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+}

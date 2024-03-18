@@ -1,4 +1,4 @@
-import "./ThreejsMesh.css";
+import "./PythonMesh.css";
 import * as THREE from "three";
 import { useEffect, useRef, useState } from "react";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -19,10 +19,11 @@ class PointRThetaPhi {
   }
 }
 
-export default function ThreejsMesh({ pol, selectedData, showPower }) {
+export default function PythonMesh({ pol, selectedData, showPower }) {
   const containerRef = useRef(null);
   const sceneRef = useRef(null);
   const surfaceRef = useRef(null);
+  const meshRef = useRef(null);
   const hoveredPowerRef = useRef(null);
   const tooltipPosRef = useRef({ x: 0, y: 0 });
   const showTooltipRef = useRef(false);
@@ -32,6 +33,112 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
 
   const [minPower, setMinPower] = useState(0);
   const [maxPower, setMaxPower] = useState(0);
+
+  function interpolateBetweenTwoPoints(p1, p2, steps) {
+    let interpolatedPoints = [];
+    if (!p1 || !p2) {
+      console.warn("Undefined point encountered in interpolation:", { p1, p2 });
+      return interpolatedPoints; // Return an empty array if either point is undefined
+    }
+    for (let step = 1; step < steps; step++) {
+      const t = step / steps;
+      const interpolatedTheta = lerp(p1.theta, p2.theta, t);
+      const interpolatedPhi = lerp(p1.phi, p2.phi, t);
+      const interpolatedRadius = lerp(p1.radius, p2.radius, t);
+      interpolatedPoints.push(
+        new PointRThetaPhi(
+          interpolatedPhi,
+          interpolatedTheta,
+          interpolatedRadius
+        )
+      );
+    }
+    return interpolatedPoints;
+  }
+
+  function generateInterpolatedGrid(points, thetaSteps, phiSteps) {
+    let finalInterpolated = [];
+
+    // Assuming points are sorted and organized by theta then phi
+    const thetaGrouped = groupByTheta(points);
+    const thetaValues = Object.keys(thetaGrouped)
+      .map(Number)
+      .sort((a, b) => a - b);
+
+    // Interpolate across theta for each phi
+    thetaValues.forEach((theta, index) => {
+      if (index < thetaValues.length - 1) {
+        const nextTheta = thetaValues[index + 1];
+        const currentPoints = thetaGrouped[theta];
+        const nextPoints = thetaGrouped[nextTheta];
+
+        // Now, interpolate between currentPoints and nextPoints for each phi
+        currentPoints.forEach((point, pointIndex) => {
+          if (pointIndex < currentPoints.length - 1) {
+            // Check to ensure matching next point exists
+            const nextPoint = nextPoints[pointIndex];
+            // Interpolate between point and nextPoint across theta
+            const interpolatedThetaPoints = interpolateBetweenTwoPoints(
+              point,
+              nextPoint,
+              thetaSteps
+            );
+            finalInterpolated.push(...interpolatedThetaPoints);
+          }
+        });
+      }
+    });
+
+    // Now, handle phi interpolation separately to ensure phiSteps are accounted for
+    const allPhiValues = [...new Set(points.map((p) => p.phi))].sort(
+      (a, b) => a - b
+    );
+
+    allPhiValues.forEach((phi, index) => {
+      if (index < allPhiValues.length - 1) {
+        const nextPhi = allPhiValues[index + 1];
+        // Filter points for current and next phi values, sorted by theta to align
+        const currentPhiPoints = points
+          .filter((p) => p.phi === phi)
+          .sort((a, b) => a.theta - b.theta);
+        const nextPhiPoints = points
+          .filter((p) => p.phi === nextPhi)
+          .sort((a, b) => a.theta - b.theta);
+
+        // Ensure we have matching pairs to interpolate between
+        currentPhiPoints.forEach((point, pointIndex) => {
+          if (pointIndex < currentPhiPoints.length - 1) {
+            const matchingNextPoint = nextPhiPoints[pointIndex]; // Assuming matching index
+            // Interpolate between point and matchingNextPoint across phi
+            const interpolatedPhiPoints = interpolateBetweenTwoPoints(
+              point,
+              matchingNextPoint,
+              phiSteps
+            );
+            finalInterpolated.push(...interpolatedPhiPoints);
+          }
+        });
+      }
+    });
+
+    return finalInterpolated;
+  }
+
+  function lerp(start, end, t) {
+    return start * (1 - t) + end * t;
+  }
+
+  function groupByTheta(points) {
+    let groups = {};
+    points.forEach((point) => {
+      const key = point.theta;
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(point);
+    });
+    return groups;
+  }
 
   function createTextLabel(text, position) {
     const canvas = document.createElement("canvas");
@@ -100,6 +207,79 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
     scene.add(zLabel);
   }
 
+  function drawMesh(vertices, faces, colors) {
+    if (sceneRef.current) {
+      if (meshRef.current) {
+        if (meshRef.current.solid && sceneRef.current)
+          sceneRef.current.remove(meshRef.current.solid);
+        if (meshRef.current.wireframe && sceneRef.current)
+          sceneRef.current.remove(meshRef.current.wireframe);
+      }
+
+      const geometry = new THREE.BufferGeometry();
+      const verticesArray = new Float32Array(vertices.flat());
+      geometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(verticesArray, 3)
+      );
+      console.log("Vertices length:", vertices.length);
+      console.log("Colors array length:", colors.length);
+
+      const colorsArray = new Float32Array(colors);
+
+      geometry.setAttribute("color", new THREE.BufferAttribute(colorsArray, 3));
+
+      const facesArray = new Uint16Array(faces.flat());
+      geometry.setIndex(new THREE.BufferAttribute(facesArray, 1));
+      geometry.computeVertexNormals();
+      const material = new THREE.MeshBasicMaterial({
+        side: THREE.DoubleSide,
+        vertexColors: true,
+      });
+      //   const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+      const mesh = new THREE.Mesh(geometry, material);
+      sceneRef.current.add(mesh);
+      surfaceRef.current = mesh;
+      const wireframeGeometry = new THREE.WireframeGeometry(geometry);
+      const wireframeMaterial = new THREE.LineBasicMaterial({
+        color: 0x000000,
+        linewidth: 1,
+      });
+      const wireframe = new THREE.LineSegments(
+        wireframeGeometry,
+        wireframeMaterial
+      );
+      sceneRef.current.add(wireframe);
+
+      // Keep reference to both meshes for possible removal or manipulation later
+      meshRef.current = { solid: mesh, wireframe: wireframe };
+    }
+  }
+
+  async function fetchMeshData(fetchingData, colors) {
+    try {
+      console.log("FETCHING DATA: ", fetchingData);
+      if (fetchingData.length > 0) {
+        const response = await fetch("http://localhost:5000/reconstruct", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ points: fetchingData }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        drawMesh(data.vertices, data.triangles, colors);
+      }
+    } catch (error) {
+      console.error("Could not fetch mesh data:", error);
+    }
+  }
+
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -134,7 +314,7 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
         (x / renderer.domElement.clientWidth) * 2 - 1,
         -(y / renderer.domElement.clientHeight) * 2 + 1
       );
-
+      console.log("SHOW POWER", showPower);
       const raycaster = new THREE.Raycaster();
       raycaster.setFromCamera(mouse, camera);
 
@@ -143,7 +323,7 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
 
         if (intersects.length > 0) {
           const index = intersects[0].face.a;
-
+          console.log("INDEX", index);
           const powerValue =
             powerMappingRef.current[index] + minimumRRef.current;
 
@@ -160,13 +340,15 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
       }
 
       // Manually manage tooltip visibility and content
-      if (showTooltipRef.current) {
-        tooltipDivRef.current.style.display = "block";
-        tooltipDivRef.current.style.left = `${tooltipPosRef.current.x}px`;
-        tooltipDivRef.current.style.top = `${tooltipPosRef.current.y}px`;
-        tooltipDivRef.current.textContent = `Power: ${hoveredPowerRef.current}`;
-      } else {
-        tooltipDivRef.current.style.display = "none";
+      if (tooltipDivRef.current) {
+        if (showTooltipRef.current) {
+          tooltipDivRef.current.style.display = "block";
+          tooltipDivRef.current.style.left = `${tooltipPosRef.current.x}px`;
+          tooltipDivRef.current.style.top = `${tooltipPosRef.current.y}px`;
+          tooltipDivRef.current.textContent = `Power: ${hoveredPowerRef.current}`;
+        } else {
+          tooltipDivRef.current.style.display = "none";
+        }
       }
     };
 
@@ -196,7 +378,7 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
     if (!sceneRef.current) return;
     if (!selectedData) return;
 
-    const geometry = new THREE.BufferGeometry();
+    // const geometry = new THREE.BufferGeometry();
     if (surfaceRef.current) {
       sceneRef.current.remove(surfaceRef.current);
       surfaceRef.current.geometry.dispose();
@@ -229,60 +411,35 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
       });
     }
 
-    let interP = interpolatePoints(newPoints, 7.5);
+    let interP = generateInterpolatedGrid(newPoints, 5, 5);
 
     if (pol === "Total") {
       minR = 0;
     }
     const colors = [];
     interP.forEach((point) => {
-      const color = getColorForValue(point.radius + minR, minPower, maxPower);
+      const color = getColorForValue(point.radius, minPower, maxPower);
       colors.push(color.r, color.g, color.b);
     });
 
     let newPowerMapping = interP.map((point) => point.radius);
 
     powerMappingRef.current = newPowerMapping;
-    let cartesianData = interP
-      .map((point) => {
-        const r = point.radius;
-        const thetaRadians = THREE.MathUtils.degToRad(point.theta);
-        const phiRadians = THREE.MathUtils.degToRad(point.phi);
-        const x = r * Math.sin(thetaRadians) * Math.cos(phiRadians);
-        const y = r * Math.sin(thetaRadians) * Math.sin(phiRadians);
-        const z = r * Math.cos(thetaRadians);
-        return [x, y, z];
-      })
-      .flat();
-    const vertices = new Float32Array(cartesianData);
-
-    geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
-
-    geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
-
-    const material = new THREE.MeshBasicMaterial({
-      side: THREE.DoubleSide,
-      vertexColors: true,
+    let cartesianData = interP.map((point) => {
+      const r = point.radius;
+      const thetaRadians = THREE.MathUtils.degToRad(point.theta);
+      const phiRadians = THREE.MathUtils.degToRad(point.phi);
+      const x = r * Math.sin(thetaRadians) * Math.cos(phiRadians);
+      const y = r * Math.sin(thetaRadians) * Math.sin(phiRadians);
+      const z = r * Math.cos(thetaRadians);
+      return [x, y, z];
     });
-    const wireframeGeometry = new THREE.WireframeGeometry(geometry);
-    const wireframeMaterial = new THREE.LineBasicMaterial({
-      color: 0x000000,
-      linewidth: 1,
-    });
-    const wireframe = new THREE.LineSegments(
-      wireframeGeometry,
-      wireframeMaterial
-    );
 
-    const surface = new THREE.Mesh(geometry, material);
-
-    surface.add(wireframe);
-    sceneRef.current.add(surface);
-    surfaceRef.current = surface;
+    fetchMeshData(cartesianData, colors);
   }, [selectedData]);
 
   return (
-    <div className="threejs-wrapper">
+    <div className="pythonmesh-wrapper">
       <div className="mesh-title">
         <h2>{pol}</h2>
         {showPower && (
@@ -300,7 +457,7 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
           ></div>
         )}
       </div>
-      <div className="pointcloud-wrapper">
+      <div className="pythonmeshgraph-wrapper">
         <div className="pointcloud" ref={containerRef} />
         <ColorLegend min={minPower} max={maxPower} />
       </div>

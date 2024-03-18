@@ -4,6 +4,8 @@ import { latestData } from "../../assets/20180228";
 import Form from "./Form";
 import ThreejsMesh from "./ThreejsMesh";
 import PointGraph from "./PointGraph";
+import PythonMesh from "./PythonMesh";
+import Table from "./Table";
 
 //Home landing page that will show the form for graph selections and graphs.
 export default function Home() {
@@ -96,16 +98,17 @@ export default function Home() {
               );
             } else if (selectedMesh === "Open3d") {
               return (
-                <ThreejsMesh
+                <PythonMesh
                   key={pol}
                   pol={pol}
                   selectedData={dataForPolarization}
+                  showPower={showPower}
                 />
               );
             }
           })}
         {selectedView === "table" && selectedData && selectedFrequency && (
-          <ThreejsMesh
+          <Table
             selectedData={selectedData}
             selectedFrequency={selectedFrequency}
           />

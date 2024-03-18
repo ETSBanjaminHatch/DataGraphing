@@ -116,7 +116,7 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
     camera.position.set(50, 50, 50);
 
     const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(500, 500);
+    renderer.setSize(550, 500);
     containerRef.current.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -160,13 +160,15 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
       }
 
       // Manually manage tooltip visibility and content
-      if (showTooltipRef.current) {
-        tooltipDivRef.current.style.display = "block";
-        tooltipDivRef.current.style.left = `${tooltipPosRef.current.x}px`;
-        tooltipDivRef.current.style.top = `${tooltipPosRef.current.y}px`;
-        tooltipDivRef.current.textContent = `Power: ${hoveredPowerRef.current}`;
-      } else {
-        tooltipDivRef.current.style.display = "none";
+      if (tooltipDivRef.current) {
+        if (showTooltipRef.current) {
+          tooltipDivRef.current.style.display = "block";
+          tooltipDivRef.current.style.left = `${tooltipPosRef.current.x}px`;
+          tooltipDivRef.current.style.top = `${tooltipPosRef.current.y}px`;
+          tooltipDivRef.current.textContent = `Power: ${hoveredPowerRef.current}`;
+        } else {
+          tooltipDivRef.current.style.display = "none";
+        }
       }
     };
 
@@ -316,8 +318,8 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
           ></div>
         )}
       </div>
-      <div className="pointcloud-wrapper">
-        <div className="pointcloud" ref={containerRef} />
+      <div className="meshgraph-wrapper">
+        <div className="meshgraph" ref={containerRef} />
         <ColorLegend min={minPower} max={maxPower} />
       </div>
     </div>
