@@ -12,18 +12,13 @@ export default function Form({
   setSelectedMesh,
   showPower,
   togglePower,
+  selectedData,
 }) {
-  const frequencyButtons = Object.keys(formattedData["Phi"] || {}).map(
+  const frequencyOptions = Object.keys(formattedData["Phi"] || {}).map(
     (frequency) => (
-      <button
-        key={frequency}
-        className={`polar-buttons ${
-          selectedFrequency === frequency ? "polar-buttons-selected" : ""
-        }`}
-        onClick={() => changeFrequency(frequency)}
-      >
+      <option key={frequency} value={frequency}>
         {frequency}
-      </button>
+      </option>
     )
   );
 
@@ -35,7 +30,13 @@ export default function Form({
       <div className="selections-wrapper">
         <div className="frequency-selection">
           <h3 className="frequency-label">Frequency (MHz):</h3>
-          {frequencyButtons}
+          <select
+            className="frequency-dropdown"
+            value={selectedFrequency}
+            onChange={(e) => changeFrequency(e.target.value)}
+          >
+            {frequencyOptions}
+          </select>
         </div>
         <div className="view-selection">
           <button

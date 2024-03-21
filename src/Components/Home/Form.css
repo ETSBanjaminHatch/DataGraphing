@@ -76,3 +76,15 @@
 .power-switch p {
   margin-left: 10px;
 }
+
+.frequency-dropdown {
+  width: 100px;
+  background-color: rgba(127, 255, 212, 0.5);
+  border: 0.5px solid rgba(127, 255, 212, 0.5);
+  box-shadow: 2px 4px 4px rgba(255, 255, 255, 0.2);
+  color: rgb(8, 8, 8);
+  padding: 5px;
+  cursor: pointer;
+  border-radius: 10px;
+  height: 40px;
+}

@@ -244,7 +244,7 @@ export default function PointGraph({ selectedData, pol }) {
 
     const geometry = new THREE.BufferGeometry();
 
-    const filteredData = filterOutliers(selectedData, 7.5);
+    const filteredData = selectedData;
 
     let newpoints = filteredData.map(
       (d) => new PointRThetaPhi(d.phi, d.theta, d.power)
@@ -261,7 +261,7 @@ export default function PointGraph({ selectedData, pol }) {
         point.radius -= minR;
       });
     }
-    let interP = generateInterpolatedGrid(newpoints, 5, 5);
+    let interP = newpoints;
     console.log(interP);
     let cartesianData = interP.map((point) => {
       const r = point.radius;

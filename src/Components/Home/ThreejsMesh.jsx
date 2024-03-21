@@ -231,7 +231,7 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
       });
     }
 
-    let interP = interpolatePoints(newPoints, 7.5);
+    let interP = newPoints;
 
     if (pol === "Total") {
       minR = 0;
@@ -243,7 +243,7 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
     });
 
     let newPowerMapping = interP.map((point) => point.radius);
-
+    console.log("INTER P", interP);
     powerMappingRef.current = newPowerMapping;
     let cartesianData = interP
       .map((point) => {
@@ -257,11 +257,11 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
       })
       .flat();
     const vertices = new Float32Array(cartesianData);
-
+    console.log("cartesian data", vertices);
     geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 
-    const gridHeight = 25;
-    const gridWidth = 49;
+    const gridHeight = 39;
+    const gridWidth = 73;
     const indices = [];
     for (let i = 0; i < gridHeight - 1; i++) {
       for (let j = 0; j < gridWidth - 1; j++) {

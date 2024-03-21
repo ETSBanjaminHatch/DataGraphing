@@ -411,7 +411,7 @@ export default function PythonMesh({ pol, selectedData, showPower }) {
       });
     }
 
-    let interP = generateInterpolatedGrid(newPoints, 5, 5);
+    let interP = newPoints;
 
     if (pol === "Total") {
       minR = 0;
