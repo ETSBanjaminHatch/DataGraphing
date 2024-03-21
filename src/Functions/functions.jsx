@@ -29,7 +29,8 @@ export function analyzeDataStructure(data) {
 }
 
 export function getColorForValue(value, min, max) {
-  // Clamp the value to be within the range [min, max]
+  max = max + max * 0.15;
+  min = min - min * 0.15;
   const clampedValue = Math.max(min, Math.min(max, value));
   const ratio = (clampedValue - min) / (max - min);
 
@@ -43,7 +44,6 @@ export function getColorForValue(value, min, max) {
     { pos: 1, color: new THREE.Color(0xff0000) }, // Red
   ];
 
-  // Ensure the loop handles the case where ratio is exactly 1
   for (let i = 0; i < gradientColors.length - 1; i++) {
     const start = gradientColors[i];
     const end = gradientColors[i + 1];
@@ -53,7 +53,6 @@ export function getColorForValue(value, min, max) {
     }
   }
 
-  // Fallback to the last color if ratio is exactly 1
   return gradientColors[gradientColors.length - 1].color;
 }
 

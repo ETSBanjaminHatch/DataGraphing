@@ -1,4 +1,6 @@
 export default function ColorLegend({ min, max }) {
+  max = max + max * 0.1;
+  min = min - min * 0.1;
   const middle = (min + max) / 2;
 
   return (
