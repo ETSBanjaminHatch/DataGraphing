@@ -41,6 +41,14 @@ export default function Form({
         <div className="view-selection">
           <button
             className={`polar-buttons ${
+              selectedView === "parameters" ? "polar-buttons-selected" : ""
+            }`}
+            onClick={() => setSelectedView("parameters")}
+          >
+            Parameters
+          </button>
+          <button
+            className={`polar-buttons ${
               selectedView === "graph" ? "polar-buttons-selected" : ""
             }`}
             onClick={() => setSelectedView("graph")}
@@ -56,24 +64,7 @@ export default function Form({
             Table
           </button>
         </div>
-        <div className="mesh-selection">
-          <button
-            className={`polar-buttons ${
-              selectedMesh === "ThreeJS" ? "polar-buttons-selected" : ""
-            }`}
-            onClick={() => setSelectedMesh("ThreeJS")}
-          >
-            ThreeJS
-          </button>
-          <button
-            className={`polar-buttons ${
-              selectedMesh === "Open3d" ? "polar-buttons-selected" : ""
-            }`}
-            onClick={() => setSelectedMesh("Open3d")}
-          >
-            Open3d (Python)
-          </button>
-        </div>
+
         <div className="power-switch">
           <ReactSwitch checked={showPower} onChange={togglePower} />
           <p>Show power readout</p>

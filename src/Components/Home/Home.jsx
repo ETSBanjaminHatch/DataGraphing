@@ -194,25 +194,14 @@ export default function Home() {
               selectedData[pol] && selectedData[pol][selectedFrequency];
             if (!dataForPolarization) return null;
 
-            if (selectedMesh === "ThreeJS") {
-              return (
-                <ThreejsMesh
-                  key={pol}
-                  pol={pol}
-                  selectedData={dataForPolarization}
-                  showPower={showPower}
-                />
-              );
-            } else if (selectedMesh === "Open3d") {
-              return (
-                <PythonMesh
-                  key={pol}
-                  pol={pol}
-                  selectedData={dataForPolarization}
-                  showPower={showPower}
-                />
-              );
-            }
+            return (
+              <ThreejsMesh
+                key={pol}
+                pol={pol}
+                selectedData={dataForPolarization}
+                showPower={showPower}
+              />
+            );
           })}
         {selectedView === "table" && selectedData && selectedFrequency && (
           <Table
