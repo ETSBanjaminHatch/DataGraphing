@@ -1,5 +1,5 @@
 .form-wrapper {
-  margin-top: 50px;
+  margin-top: -13px;
   display: flex;
 
   align-items: center;
@@ -32,7 +32,7 @@
 }
 
 .frequency-label {
-  margin-right: 20px;
+  margin-right: 14px;
 }
 
 .polar-buttons-selected {
@@ -64,4 +64,27 @@
 .logo {
   width: 400px;
   height: 100px;
+}
+
+.power-switch {
+  display: flex;
+  justify-content: center;
+  margin-left: 60px;
+  margin-top: 10px;
+}
+
+.power-switch p {
+  margin-left: 10px;
+}
+
+.frequency-dropdown {
+  width: 100px;
+  background-color: rgba(127, 255, 212, 0.5);
+  border: 0.5px solid rgba(127, 255, 212, 0.5);
+  box-shadow: 2px 4px 4px rgba(255, 255, 255, 0.2);
+  color: rgb(8, 8, 8);
+  padding: 5px;
+  cursor: pointer;
+  border-radius: 10px;
+  height: 40px;
 }

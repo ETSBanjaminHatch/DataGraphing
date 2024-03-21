@@ -1,0 +1,10 @@
+.pointcloud-wrapper {
+  margin-left: 35px;
+  background-color: rgb(240, 248, 255);
+}
+
+.point-title {
+  display: flex;
+  justify-content: center;
+  color: rgb(238, 29, 29);
+}

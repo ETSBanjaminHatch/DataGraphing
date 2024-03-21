@@ -1,5 +1,6 @@
 import "./Form.css";
 import logo from "../../assets/logo.png";
+import ReactSwitch from "react-switch";
 
 export default function Form({
   selectedFrequency,
@@ -9,18 +10,15 @@ export default function Form({
   setSelectedView,
   selectedMesh,
   setSelectedMesh,
+  showPower,
+  togglePower,
+  selectedData,
 }) {
-  const frequencyButtons = Object.keys(formattedData["Phi"] || {}).map(
+  const frequencyOptions = Object.keys(formattedData["Phi"] || {}).map(
     (frequency) => (
-      <button
-        key={frequency}
-        className={`polar-buttons ${
-          selectedFrequency === frequency ? "polar-buttons-selected" : ""
-        }`}
-        onClick={() => changeFrequency(frequency)}
-      >
+      <option key={frequency} value={frequency}>
         {frequency}
-      </button>
+      </option>
     )
   );
 
@@ -32,7 +30,13 @@ export default function Form({
       <div className="selections-wrapper">
         <div className="frequency-selection">
           <h3 className="frequency-label">Frequency (MHz):</h3>
-          {frequencyButtons}
+          <select
+            className="frequency-dropdown"
+            value={selectedFrequency}
+            onChange={(e) => changeFrequency(e.target.value)}
+          >
+            {frequencyOptions}
+          </select>
         </div>
         <div className="view-selection">
           <button
@@ -69,6 +73,10 @@ export default function Form({
           >
             Open3d (Python)
           </button>
+        </div>
+        <div className="power-switch">
+          <ReactSwitch checked={showPower} onChange={togglePower} />
+          <p>Show power readout</p>
         </div>
       </div>
     </div>
