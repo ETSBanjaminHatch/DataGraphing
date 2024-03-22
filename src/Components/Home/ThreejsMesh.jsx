@@ -243,7 +243,7 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
     });
 
     let newPowerMapping = interP.map((point) => point.radius);
-    console.log("INTER P", interP);
+
     powerMappingRef.current = newPowerMapping;
     let cartesianData = interP
       .map((point) => {
@@ -257,7 +257,7 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
       })
       .flat();
     const vertices = new Float32Array(cartesianData);
-    console.log("cartesian data", vertices);
+
     geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 
     const gridHeight = 39;

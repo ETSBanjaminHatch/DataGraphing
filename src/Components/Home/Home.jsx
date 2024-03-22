@@ -6,6 +6,7 @@ import ThreejsMesh from "./ThreejsMesh";
 import PointGraph from "./PointGraph";
 import PythonMesh from "./PythonMesh";
 import Table from "./Table";
+import Parameters from "./Parameters";
 
 //Home landing page that will show the form for graph selections and graphs.
 export default function Home() {
@@ -15,6 +16,7 @@ export default function Home() {
   const [selectedMesh, setSelectedMesh] = useState("ThreeJS");
   const [showPower, setShowPower] = useState(false);
   const [rawData, setRawData] = useState([]);
+  const [paramsData, setParamsData] = useState(null);
 
   const polarizations = ["Theta", "Phi", "Total"];
 
@@ -63,7 +65,7 @@ export default function Home() {
     const processData = (data) => {
       const result = {};
       if (Array.isArray(data)) {
-        console.log("data in process", data);
+        // console.log("data in process", data);
         data.forEach(([frequency, polarization, theta, phi, power]) => {
           let polarizationKey;
           switch (polarization) {
@@ -112,8 +114,8 @@ export default function Home() {
           throw new Error("Network response was not ok");
         }
         const data = await response.json();
-        console.log(data);
-        console.log("data.data", data[1].Data);
+        // console.log(data);
+        // console.log("data.data", data[1].Data);
 
         setRawData(data[1].Data);
       } catch (error) {
@@ -122,6 +124,25 @@ export default function Home() {
     };
 
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    console.log("TEST");
+    const fetchParams = async () => {
+      try {
+        const response = await fetch("/api/testparams");
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        console.log("params data", data);
+        setParamsData(data);
+      } catch (error) {
+        console.error("There was an error fetching the data:", error);
+      }
+    };
+
+    fetchParams();
   }, []);
   //Memoise the data to prevent unecessary re-renders
   // const formattedData = useMemo(() => {
@@ -186,6 +207,9 @@ export default function Home() {
         togglePower={togglePower}
       />
       <div className="data-wrapper">
+        {selectedView === "parameters" && paramsData && (
+          <Parameters paramsData={paramsData} />
+        )}
         {selectedView === "graph" &&
           selectedData &&
           selectedFrequency &&
