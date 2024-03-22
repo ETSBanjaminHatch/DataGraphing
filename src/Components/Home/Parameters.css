@@ -1,0 +1,30 @@
+.parameters-wrapper {
+  display: flex;
+  margin-left: 550px;
+}
+
+.params-button {
+  width: 150px;
+  height: 75px;
+  cursor: normal;
+  border-radius: 0;
+}
+
+.side-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.details-wrapper {
+  padding: 10px;
+  border-left: 1px solid #ddd;
+  margin-left: 20px;
+}
+
+h2 {
+  border-bottom: 1px solid #ddd;
+}
+
+ul {
+  margin-left: 25px;
+}

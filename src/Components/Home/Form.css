@@ -1,5 +1,4 @@
 .form-wrapper {
-  margin-top: -13px;
   display: flex;
 
   align-items: center;
@@ -68,8 +67,7 @@
 
 .power-switch {
   display: flex;
-  justify-content: center;
-  margin-left: 60px;
+  margin-left: 169px;
   margin-top: 10px;
 }
 
