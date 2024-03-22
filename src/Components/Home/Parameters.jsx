@@ -94,7 +94,7 @@ export default function Parameters({ paramsData }) {
       base: {
         background: "#fff",
         color: "#000",
-        fontSize: "14px",
+        fontSize: "16px",
       },
       node: {
         activeLink: {
