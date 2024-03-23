@@ -1,0 +1,41 @@
+.test-selection-wrapper {
+  display: flex;
+  margin-left: 300px;
+  align-items: center;
+}
+
+.test-selection-wrapper ul {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid black;
+  padding: 0;
+}
+.test-item {
+  cursor: pointer;
+  padding: 5px;
+  list-style: none;
+}
+
+.test-item:hover {
+  background-color: #8ec293;
+}
+
+.selected {
+  background-color: rgb(137, 224, 86);
+  color: rgb(8, 8, 8);
+}
+
+.load-test-button {
+  height: 50px;
+  background-color: rgb(131, 138, 238);
+  margin-left: 15px;
+}
+
+.load-test-button:hover {
+  background-color: white;
+}
+
+.no-test-warning {
+  margin-left: 10px;
+  color: red;
+}

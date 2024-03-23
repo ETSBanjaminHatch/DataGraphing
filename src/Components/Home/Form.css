@@ -50,9 +50,9 @@
 }
 
 .selections-wrapper {
-  margin-left: 300px;
+  margin-top: 25px;
+  margin-left: 100px;
   display: flex;
-  flex-direction: column;
 }
 
 .title-wrapper {
@@ -67,8 +67,8 @@
 
 .power-switch {
   display: flex;
-  margin-left: 169px;
-  margin-top: 10px;
+  margin-left: 60px;
+  margin-top: 24px;
 }
 
 .power-switch p {

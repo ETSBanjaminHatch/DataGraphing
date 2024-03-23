@@ -1,3 +1,6 @@
+.home-wrapper {
+}
+
 .dataview-wrapper {
   width: 100vw;
   height: 100vh;
@@ -5,4 +8,21 @@
 
 .data-wrapper {
   display: flex;
+}
+
+.icon-wrapper {
+  width: 25%;
+  height: 25%;
+  margin-left: 50px;
+  margin-top: 25px;
+}
+
+.form-data-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.icon-testselection-wrapper {
+  display: flex;
+  align-items: center;
 }
