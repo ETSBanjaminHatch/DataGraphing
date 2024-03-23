@@ -13,14 +13,16 @@ export default function Form({
   showPower,
   togglePower,
   selectedData,
+  setSelectedDatasetIndex,
+  selectedDatasetIndex,
 }) {
-  const frequencyOptions = Object.keys(formattedData["Phi"] || {}).map(
-    (frequency) => (
-      <option key={frequency} value={frequency}>
-        {frequency}
-      </option>
-    )
-  );
+  const frequencyOptions = Object.keys(
+    formattedData[selectedDatasetIndex]?.["Phi"] || {}
+  ).map((frequency) => (
+    <option key={frequency} value={frequency}>
+      {frequency}
+    </option>
+  ));
 
   return (
     <div className="form-wrapper">
@@ -59,6 +61,24 @@ export default function Form({
             onClick={() => setSelectedView("table")}
           >
             Table
+          </button>
+        </div>
+        <div className="data-selection-wrapper">
+          <button
+            className={`data-buttons-left ${
+              selectedDatasetIndex === 0 ? "data-selected" : ""
+            }`}
+            onClick={() => setSelectedDatasetIndex(0)}
+          >
+            Raw
+          </button>
+          <button
+            className={`data-buttons-right ${
+              selectedDatasetIndex === 1 ? "data-selected" : ""
+            }`}
+            onClick={() => setSelectedDatasetIndex(1)}
+          >
+            Final
           </button>
         </div>
 
