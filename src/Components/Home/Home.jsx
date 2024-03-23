@@ -7,6 +7,8 @@ import PointGraph from "./PointGraph";
 import PythonMesh from "./PythonMesh";
 import Table from "./Table";
 import Parameters from "./Parameters";
+import logo from "../../assets/logo.png";
+import TestSelection from "./TestSelection";
 
 //Home landing page that will show the form for graph selections and graphs.
 export default function Home() {
@@ -17,6 +19,8 @@ export default function Home() {
   const [showPower, setShowPower] = useState(false);
   const [rawData, setRawData] = useState([]);
   const [paramsData, setParamsData] = useState(null);
+  const [selectedTest, setSelectedTest] = useState(null);
+  const [noTestWarning, setNoTestWarning] = useState(false);
 
   const polarizations = ["Theta", "Phi", "Total"];
 
@@ -60,6 +64,26 @@ export default function Home() {
 
     return result;
   };
+
+  async function fetchTestData() {
+    if (!selectedTest) {
+      setNoTestWarning(true);
+      return;
+    }
+    setNoTestWarning(false);
+
+    try {
+      const response = await fetch(`/api/documents/${selectedTest}`);
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      setRawData(data[1].Data);
+      console.log("RAW DATA: ", data[1].Data);
+    } catch (error) {
+      console.log("ERROR FETCHING DATA", error);
+    }
+  }
 
   const formattedData = useMemo(() => {
     const processData = (data) => {
@@ -105,26 +129,26 @@ export default function Home() {
     return processData(rawData);
   }, [rawData]);
   console.log("FORMATTTED DATA ", formattedData);
-  useEffect(() => {
-    console.log("TEST");
-    const fetchData = async () => {
-      try {
-        const response = await fetch("/api/testresults");
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        // console.log(data);
-        // console.log("data.data", data[1].Data);
+  // useEffect(() => {
+  //   console.log("TEST");
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await fetch("/api/testresults");
+  //       if (!response.ok) {
+  //         throw new Error("Network response was not ok");
+  //       }
+  //       const data = await response.json();
 
-        setRawData(data[1].Data);
-      } catch (error) {
-        console.error("There was an error fetching the data:", error);
-      }
-    };
+  //       // console.log("data.data", data[1].Data);
 
-    fetchData();
-  }, []);
+  //       setRawData(data[1].Data);
+  //     } catch (error) {
+  //       console.error("There was an error fetching the data:", error);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, []);
 
   useEffect(() => {
     console.log("TEST");
@@ -135,6 +159,8 @@ export default function Home() {
           throw new Error("Network response was not ok");
         }
         const data = await response.json();
+        const testList = data.map((test) => test._id);
+        console.log("TEST LIST : ", testList);
         console.log("params data", data);
         setParamsData(data);
       } catch (error) {
@@ -144,28 +170,6 @@ export default function Home() {
 
     fetchParams();
   }, []);
-  //Memoise the data to prevent unecessary re-renders
-  // const formattedData = useMemo(() => {
-  //   return latestData.reduce((acc, obj) => {
-  //     const { Polarization, Frequency, ...rest } = obj;
-
-  //     if (!acc[Polarization]) {
-  //       acc[Polarization] = {};
-  //     }
-
-  //     if (!acc[Polarization][Frequency]) {
-  //       acc[Polarization][Frequency] = [];
-  //     }
-
-  //     acc[Polarization][Frequency].push({
-  //       phi: rest["phi"],
-  //       theta: rest["theta"],
-  //       power: rest["power"],
-  //     });
-
-  //     return acc;
-  //   }, {});
-  // }, [latestData]);
 
   function togglePower() {
     const changedPower = !showPower;
@@ -195,44 +199,58 @@ export default function Home() {
   console.log("SELECTED DATA", selectedData);
   return (
     <div className="home-wrapper">
-      <Form
-        selectedFrequency={selectedFrequency}
-        changeFrequency={changeFrequency}
-        formattedData={formattedData}
-        selectedView={selectedView}
-        setSelectedView={setSelectedView}
-        selectedMesh={selectedMesh}
-        setSelectedMesh={setSelectedMesh}
-        showPower={showPower}
-        togglePower={togglePower}
-      />
-      <div className="data-wrapper">
-        {selectedView === "parameters" && paramsData && (
-          <Parameters paramsData={paramsData} />
-        )}
-        {selectedView === "graph" &&
-          selectedData &&
-          selectedFrequency &&
-          polarizations.map((pol) => {
-            const dataForPolarization =
-              selectedData[pol] && selectedData[pol][selectedFrequency];
-            if (!dataForPolarization) return null;
+      <div className="icon-testselection-wrapper">
+        <div className="icon-wrapper">
+          <img className="logo" src={logo} alt="Logo" />
+        </div>
+        <TestSelection
+          selectedTest={selectedTest}
+          setSelectedTest={setSelectedTest}
+          fetchTestData={fetchTestData}
+          noTestWarning={noTestWarning}
+          setNoTestWarning={setNoTestWarning}
+        />
+      </div>
+      <div className="form-data-wrapper">
+        <Form
+          selectedFrequency={selectedFrequency}
+          changeFrequency={changeFrequency}
+          formattedData={formattedData}
+          selectedView={selectedView}
+          setSelectedView={setSelectedView}
+          selectedMesh={selectedMesh}
+          setSelectedMesh={setSelectedMesh}
+          showPower={showPower}
+          togglePower={togglePower}
+        />
+        <div className="data-wrapper">
+          {selectedView === "parameters" && paramsData && (
+            <Parameters paramsData={paramsData} />
+          )}
+          {selectedView === "graph" &&
+            selectedData &&
+            selectedFrequency &&
+            polarizations.map((pol) => {
+              const dataForPolarization =
+                selectedData[pol] && selectedData[pol][selectedFrequency];
+              if (!dataForPolarization) return null;
 
-            return (
-              <ThreejsMesh
-                key={pol}
-                pol={pol}
-                selectedData={dataForPolarization}
-                showPower={showPower}
-              />
-            );
-          })}
-        {selectedView === "table" && selectedData && selectedFrequency && (
-          <Table
-            selectedData={selectedData}
-            selectedFrequency={selectedFrequency}
-          />
-        )}
+              return (
+                <ThreejsMesh
+                  key={pol}
+                  pol={pol}
+                  selectedData={dataForPolarization}
+                  showPower={showPower}
+                />
+              );
+            })}
+          {selectedView === "table" && selectedData && selectedFrequency && (
+            <Table
+              selectedData={selectedData}
+              selectedFrequency={selectedFrequency}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

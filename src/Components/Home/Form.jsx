@@ -24,9 +24,6 @@ export default function Form({
 
   return (
     <div className="form-wrapper">
-      <div className="title-wrapper">
-        <img className="logo" src={logo} alt="Logo" />
-      </div>
       <div className="selections-wrapper">
         <div className="frequency-selection">
           <h3 className="frequency-label">Frequency (MHz):</h3>
