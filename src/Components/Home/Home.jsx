@@ -14,54 +14,50 @@ import TestSelection from "./TestSelection";
 export default function Home() {
   const [selectedFrequency, setSelectedFrequency] = useState();
   const [selectedView, setSelectedView] = useState("graph");
-  const [selectedData, setSelectedData] = useState();
+  // const [selectedData, setSelectedData] = useState();
   const [selectedMesh, setSelectedMesh] = useState("ThreeJS");
   const [showPower, setShowPower] = useState(false);
   const [rawData, setRawData] = useState([]);
   const [paramsData, setParamsData] = useState(null);
   const [selectedTest, setSelectedTest] = useState(null);
   const [noTestWarning, setNoTestWarning] = useState(false);
+  const [selectedDatasetIndex, setSelectedDatasetIndex] = useState(1);
+  const [tableData, setTableData] = useState(null);
 
   const polarizations = ["Theta", "Phi", "Total"];
 
-  const processDataArray = (allData) => {
-    const result = {};
+  const newprocessDataArray = (allData) => {
+    const result = allData.map((dataArray) => {
+      const tempResult = {};
+      dataArray.Data.forEach((dataPoint) => {
+        const [frequency, polarization, theta, phi] = dataPoint;
 
-    allData.forEach((dataArray) => {
-      dataArray.Data.forEach(([frequency, polarization, theta, phi, power]) => {
-        let polarizationKey;
-        switch (polarization) {
-          case 0:
-            polarizationKey = "Theta";
-            break;
-          case 1:
-            polarizationKey = "Phi";
-            break;
-          case 2:
-            polarizationKey = "Total";
-            break;
-          default:
-            polarizationKey = `Polarization ${polarization}`;
+        let power;
+
+        if (dataPoint.length === 5) {
+          [, , , , power] = dataPoint;
+        } else if (dataPoint.length === 6) {
+          const [, , , , Re, Im] = dataPoint;
+          power = 20 * Math.log10(Math.sqrt(Re ** 2 + Im ** 2));
         }
 
+        let polarizationKey =
+          ["Theta", "Phi", "Total"][polarization] ||
+          `Polarization ${polarization}`;
         const frequencyKey = `${frequency}`;
 
-        if (!result[polarizationKey]) {
-          result[polarizationKey] = {};
+        if (!tempResult[polarizationKey]) {
+          tempResult[polarizationKey] = {};
         }
 
-        if (!result[polarizationKey][frequencyKey]) {
-          result[polarizationKey][frequencyKey] = [];
+        if (!tempResult[polarizationKey][frequencyKey]) {
+          tempResult[polarizationKey][frequencyKey] = [];
         }
 
-        result[polarizationKey][frequencyKey].push({
-          theta,
-          phi,
-          power,
-        });
+        tempResult[polarizationKey][frequencyKey].push({ theta, phi, power });
       });
+      return tempResult;
     });
-
     return result;
   };
 
@@ -78,80 +74,15 @@ export default function Home() {
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      setRawData(data[1].Data);
-      console.log("RAW DATA: ", data[1].Data);
+      setRawData(data);
+      console.log("RAW DATA: ", data);
     } catch (error) {
       console.log("ERROR FETCHING DATA", error);
     }
   }
-
-  const formattedData = useMemo(() => {
-    const processData = (data) => {
-      const result = {};
-      if (Array.isArray(data)) {
-        // console.log("data in process", data);
-        data.forEach(([frequency, polarization, theta, phi, power]) => {
-          let polarizationKey;
-          switch (polarization) {
-            case 0:
-              polarizationKey = "Theta";
-              break;
-            case 1:
-              polarizationKey = "Phi";
-              break;
-            case 2:
-              polarizationKey = "Total";
-              break;
-            default:
-              polarizationKey = `Polarization ${polarization}`;
-          }
-
-          const frequencyKey = `${frequency}`;
-
-          if (!result[polarizationKey]) {
-            result[polarizationKey] = {};
-          }
-
-          if (!result[polarizationKey][frequencyKey]) {
-            result[polarizationKey][frequencyKey] = [];
-          }
-
-          result[polarizationKey][frequencyKey].push({
-            theta,
-            phi,
-            power,
-          });
-        });
-      }
-
-      return result;
-    };
-    return processData(rawData);
-  }, [rawData]);
-  console.log("FORMATTTED DATA ", formattedData);
-  // useEffect(() => {
-  //   console.log("TEST");
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await fetch("/api/testresults");
-  //       if (!response.ok) {
-  //         throw new Error("Network response was not ok");
-  //       }
-  //       const data = await response.json();
-
-  //       // console.log("data.data", data[1].Data);
-
-  //       setRawData(data[1].Data);
-  //     } catch (error) {
-  //       console.error("There was an error fetching the data:", error);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
+  const formattedData = useMemo(() => newprocessDataArray(rawData), [rawData]);
 
   useEffect(() => {
-    console.log("TEST");
     const fetchParams = async () => {
       try {
         const response = await fetch("/api/testparams");
@@ -160,8 +91,7 @@ export default function Home() {
         }
         const data = await response.json();
         const testList = data.map((test) => test._id);
-        console.log("TEST LIST : ", testList);
-        console.log("params data", data);
+
         setParamsData(data);
       } catch (error) {
         console.error("There was an error fetching the data:", error);
@@ -182,7 +112,7 @@ export default function Home() {
 
   //Sets the initial frequency based on the data
   useEffect(() => {
-    const initialPolarizationData = formattedData["Theta"];
+    const initialPolarizationData = selectedData["Theta"];
 
     if (initialPolarizationData) {
       const firstFrequency = Object.keys(initialPolarizationData)[0];
@@ -191,12 +121,64 @@ export default function Home() {
     }
   }, [formattedData]);
 
-  useEffect(() => {
-    if (selectedFrequency) {
-      setSelectedData(formattedData);
+  const selectedData = useMemo(() => {
+    if (formattedData && formattedData.length > selectedDatasetIndex) {
+      return formattedData[selectedDatasetIndex];
     }
-  }, [formattedData, selectedFrequency]);
-  console.log("SELECTED DATA", selectedData);
+    return {};
+  }, [formattedData, selectedDatasetIndex]);
+
+  const organizeRawData = (rawData) => {
+    const organizedData = { Theta: {}, Phi: {}, Total: {} };
+
+    rawData.Data.forEach((entry) => {
+      const [frequency, polarizationCode, theta, phi, ...rest] = entry;
+      const polarizationKey = ["Theta", "Phi", "Total"][polarizationCode];
+
+      if (!organizedData[polarizationKey][frequency]) {
+        organizedData[polarizationKey][frequency] = [];
+      }
+
+      organizedData[polarizationKey][frequency].push({
+        theta,
+        phi,
+        data: rest,
+      });
+    });
+
+    return organizedData;
+  };
+  useEffect(() => {
+    if (!rawData || selectedDatasetIndex === null || !selectedFrequency) return;
+
+    const organizedData = organizeRawData(rawData[selectedDatasetIndex]);
+
+    const preprocessForTable = (organizedData, selectedFrequency) => {
+      const tableData = {};
+
+      Object.keys(organizedData).forEach((polarization) => {
+        const frequencyData = organizedData[polarization][selectedFrequency];
+        if (frequencyData) {
+          tableData[polarization] = frequencyData.map((entry) => {
+            const { theta, phi, data } = entry;
+            let displayValue =
+              data.length === 1
+                ? data[0].toFixed(2)
+                : `re:${data[0].toFixed(2)}, im:${data[1].toFixed(2)}`;
+
+            return { theta, phi, displayValue };
+          });
+        }
+      });
+
+      return tableData;
+    };
+
+    const newTableData = preprocessForTable(organizedData, selectedFrequency);
+
+    setTableData(newTableData);
+  }, [rawData, selectedDatasetIndex, selectedFrequency]);
+
   return (
     <div className="home-wrapper">
       <div className="icon-testselection-wrapper">
@@ -211,47 +193,52 @@ export default function Home() {
           setNoTestWarning={setNoTestWarning}
         />
       </div>
-      <div className="form-data-wrapper">
-        <Form
-          selectedFrequency={selectedFrequency}
-          changeFrequency={changeFrequency}
-          formattedData={formattedData}
-          selectedView={selectedView}
-          setSelectedView={setSelectedView}
-          selectedMesh={selectedMesh}
-          setSelectedMesh={setSelectedMesh}
-          showPower={showPower}
-          togglePower={togglePower}
-        />
-        <div className="data-wrapper">
-          {selectedView === "parameters" && paramsData && (
-            <Parameters paramsData={paramsData} />
-          )}
-          {selectedView === "graph" &&
-            selectedData &&
-            selectedFrequency &&
-            polarizations.map((pol) => {
-              const dataForPolarization =
-                selectedData[pol] && selectedData[pol][selectedFrequency];
-              if (!dataForPolarization) return null;
+      {selectedData && (
+        <div className="form-data-wrapper">
+          <Form
+            selectedFrequency={selectedFrequency}
+            changeFrequency={changeFrequency}
+            formattedData={formattedData}
+            selectedView={selectedView}
+            setSelectedView={setSelectedView}
+            selectedMesh={selectedMesh}
+            setSelectedMesh={setSelectedMesh}
+            showPower={showPower}
+            togglePower={togglePower}
+            selectedDatasetIndex={selectedDatasetIndex}
+            setSelectedDatasetIndex={setSelectedDatasetIndex}
+          />
+          <div className="data-wrapper">
+            {selectedView === "parameters" && paramsData && (
+              <Parameters paramsData={paramsData} />
+            )}
+            {selectedView === "graph" &&
+              selectedData &&
+              selectedFrequency &&
+              polarizations.map((pol) => {
+                const dataForPolarization =
+                  selectedData[pol] && selectedData[pol][selectedFrequency];
+                if (!dataForPolarization) return null;
 
-              return (
-                <ThreejsMesh
-                  key={pol}
-                  pol={pol}
-                  selectedData={dataForPolarization}
-                  showPower={showPower}
-                />
-              );
-            })}
-          {selectedView === "table" && selectedData && selectedFrequency && (
-            <Table
-              selectedData={selectedData}
-              selectedFrequency={selectedFrequency}
-            />
-          )}
+                return (
+                  <ThreejsMesh
+                    key={pol}
+                    pol={pol}
+                    selectedData={dataForPolarization}
+                    showPower={showPower}
+                  />
+                );
+              })}
+            {selectedView === "table" && selectedData && selectedFrequency && (
+              <Table
+                tableData={tableData}
+                selectedData={selectedData}
+                selectedFrequency={selectedFrequency}
+              />
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

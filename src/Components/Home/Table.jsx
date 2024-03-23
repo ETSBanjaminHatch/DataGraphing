@@ -1,38 +1,18 @@
 import "./Table.css";
 
-export default function Table({ selectedData, selectedFrequency }) {
-  console.log("SELECTED IN TABLE", selectedData);
-  const organizeData = (data) => {
-    if (!data) return {};
-    const organizedData = {};
-    data.forEach(({ theta, phi, power }) => {
-      const shortenedPower = power.toFixed(2);
-      if (!organizedData[phi]) {
-        organizedData[phi] = {};
-      }
-      organizedData[phi][theta] = shortenedPower;
-    });
-    return organizedData;
-  };
-
-  const phiData = selectedData["Phi"]
-    ? selectedData["Phi"][selectedFrequency]
-    : null;
-  const thetaData = selectedData["Theta"]
-    ? selectedData["Theta"][selectedFrequency]
-    : null;
-  const totalData = selectedData["Total"]
-    ? selectedData["Total"][selectedFrequency]
-    : null;
-
-  const organizedPhiData = organizeData(phiData);
-  const organizedThetaData = organizeData(thetaData);
-  const organizedTotalData = organizeData(totalData);
-
-  const generateTable = (organizedData, title) => {
-    if (Object.keys(organizedData).length === 0) {
+export default function Table({ tableData }) {
+  const generateTable = (data, title) => {
+    if (!data || Object.keys(data).length === 0) {
       return null;
     }
+
+    const thetas = [...new Set(data.map((item) => item.theta))].sort(
+      (a, b) => a - b
+    );
+    const phis = [...new Set(data.map((item) => item.phi))].sort(
+      (a, b) => a - b
+    );
+
     return (
       <div className="table-wrapper">
         <h3>{title}</h3>
@@ -40,36 +20,29 @@ export default function Table({ selectedData, selectedFrequency }) {
           <thead>
             <tr>
               <th style={{ border: "none", background: "none" }}></th>
-              <th
-                colSpan={
-                  Object.keys(organizedData[Object.keys(organizedData)[0]])
-                    .length
-                }
-                style={{ textAlign: "center" }}
-              >
+              <th colSpan={thetas.length} style={{ textAlign: "center" }}>
                 Theta Values
               </th>
             </tr>
             <tr>
               <th>Phi</th>
-              {Object.keys(organizedData[Object.keys(organizedData)[0]]).map(
-                (theta) => (
-                  <th key={theta}>{theta}</th>
-                )
-              )}
+              {thetas.map((theta) => (
+                <th key={theta}>{theta}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {Object.keys(organizedData).map((phi) => (
+            {phis.map((phi) => (
               <tr key={phi}>
-                <th scope="row">{phi}</th>
-                {Object.keys(organizedData[phi]).map((theta) => (
-                  <td key={theta}>
-                    {organizedData[phi][theta] !== undefined
-                      ? organizedData[phi][theta]
-                      : "N/A"}
-                  </td>
-                ))}
+                <th>{phi}</th>
+                {thetas.map((theta) => {
+                  const item = data.find(
+                    (d) => d.theta === theta && d.phi === phi
+                  );
+                  return (
+                    <td key={theta}>{item ? item.displayValue : "N/A"}</td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
@@ -80,9 +53,9 @@ export default function Table({ selectedData, selectedFrequency }) {
 
   return (
     <div className="tables-wrapper">
-      {thetaData && generateTable(organizedThetaData, "Theta Polarization:")}
-      {phiData && generateTable(organizedPhiData, "Phi Polarization:")}
-      {totalData && generateTable(organizedTotalData, "Total Polarization:")}
+      {Object.entries(tableData).map(([polarization, data]) =>
+        generateTable(data, `${polarization} Polarization:`)
+      )}
     </div>
   );
 }
