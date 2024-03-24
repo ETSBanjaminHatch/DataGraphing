@@ -9,6 +9,7 @@ import Table from "./Table";
 import Parameters from "./Parameters";
 import logo from "../../assets/logo.png";
 import TestSelection from "./TestSelection";
+import TestMesh from "./TestMesh";
 
 //Home landing page that will show the form for graph selections and graphs.
 export default function Home() {
@@ -221,7 +222,7 @@ export default function Home() {
                 if (!dataForPolarization) return null;
 
                 return (
-                  <ThreejsMesh
+                  <TestMesh
                     key={pol}
                     pol={pol}
                     selectedData={dataForPolarization}
