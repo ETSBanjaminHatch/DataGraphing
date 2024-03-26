@@ -1,6 +1,6 @@
 import Plot from "react-plotly.js";
 
-export default function PolarLineGraph({ selectedData, zeroAngle }) {
+export default function PolarLineGraph({ selectedData, zeroAngle, pol }) {
   const mappedAngle = zeroAngle === "phi" ? "theta" : "phi";
   const angleLabel = zeroAngle === "phi" ? "Theta" : "Phi";
   const filteredData = selectedData.filter((d) => d[zeroAngle] === 0);
@@ -48,7 +48,20 @@ export default function PolarLineGraph({ selectedData, zeroAngle }) {
             text: `${angleLabel} Angle (°)`,
             showarrow: false,
             font: {
-              size: 16,
+              size: 20,
+            },
+          },
+          {
+            xref: "paper",
+            yref: "paper",
+            x: 0.5,
+            xanchor: "center",
+            y: 1.1,
+            yanchor: "bottom",
+            text: `Polarization: ${pol}`,
+            showarrow: false,
+            font: {
+              size: 32,
             },
           },
         ],

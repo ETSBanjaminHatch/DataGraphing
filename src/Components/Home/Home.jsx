@@ -242,12 +242,13 @@ export default function Home() {
                   return (
                     <PolarLineGraph
                       key={pol}
+                      pol={pol}
                       zeroAngle={zeroAngle}
                       selectedData={dataForPolarization}
                     />
                   );
                 }
-                return null; // In case graphType is neither '3D' nor 'polar'
+                return null;
               })}
             {selectedView === "table" && selectedData && selectedFrequency && (
               <Table
