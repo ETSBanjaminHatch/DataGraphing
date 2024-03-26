@@ -9,6 +9,9 @@ import Table from "./Table";
 import Parameters from "./Parameters";
 import logo from "../../assets/logo.png";
 import TestSelection from "./TestSelection";
+import TestMesh from "./TestMesh";
+import PolarLineGraph from "./PolarGraph";
+import D3PolarLineGraph from "./D3PolarLineGraph";
 
 //Home landing page that will show the form for graph selections and graphs.
 export default function Home() {
@@ -23,6 +26,8 @@ export default function Home() {
   const [noTestWarning, setNoTestWarning] = useState(false);
   const [selectedDatasetIndex, setSelectedDatasetIndex] = useState(1);
   const [tableData, setTableData] = useState(null);
+  const [zeroAngle, setZeroAngle] = useState("theta");
+  const [graphType, setGraphType] = useState("3D");
 
   const polarizations = ["Theta", "Phi", "Total"];
 
@@ -207,6 +212,10 @@ export default function Home() {
             togglePower={togglePower}
             selectedDatasetIndex={selectedDatasetIndex}
             setSelectedDatasetIndex={setSelectedDatasetIndex}
+            graphType={graphType}
+            setGraphType={setGraphType}
+            zeroAngle={zeroAngle}
+            setZeroAngle={setZeroAngle}
           />
           <div className="data-wrapper">
             {selectedView === "parameters" && paramsData && (
@@ -220,14 +229,25 @@ export default function Home() {
                   selectedData[pol] && selectedData[pol][selectedFrequency];
                 if (!dataForPolarization) return null;
 
-                return (
-                  <ThreejsMesh
-                    key={pol}
-                    pol={pol}
-                    selectedData={dataForPolarization}
-                    showPower={showPower}
-                  />
-                );
+                if (graphType === "3D") {
+                  return (
+                    <TestMesh
+                      key={pol}
+                      pol={pol}
+                      selectedData={dataForPolarization}
+                      showPower={showPower}
+                    />
+                  );
+                } else if (graphType === "polar") {
+                  return (
+                    <PolarLineGraph
+                      key={pol}
+                      zeroAngle={zeroAngle}
+                      selectedData={dataForPolarization}
+                    />
+                  );
+                }
+                return null; // In case graphType is neither '3D' nor 'polar'
               })}
             {selectedView === "table" && selectedData && selectedFrequency && (
               <Table
