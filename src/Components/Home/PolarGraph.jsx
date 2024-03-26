@@ -22,6 +22,8 @@ export default function PolarLineGraph({ selectedData, zeroAngle }) {
         },
       ]}
       layout={{
+        width: 650,
+        height: 550,
         polar: {
           radialaxis: {
             visible: true,
@@ -52,7 +54,7 @@ export default function PolarLineGraph({ selectedData, zeroAngle }) {
         ],
         showlegend: false,
         margin: {
-          b: 100, // Increase bottom margin to make space for the annotation
+          b: 100,
         },
       }}
     />
