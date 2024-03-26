@@ -100,27 +100,6 @@ export default function TestMesh({ pol, selectedData, showPower }) {
     scene.add(zLabel);
   }
 
-  //   function analyzeData(data) {
-  //     // Analyze data to determine the structure
-  //     const thetaValues = new Set();
-  //     const phiValues = new Set();
-  //     data.forEach((point) => {
-  //       thetaValues.add(point.theta);
-  //       phiValues.add(point.phi);
-  //     });
-
-  //     console.log("THETA VALUES : ", thetaValues);
-  //     console.log("PHI VALUES", phiValues);
-
-  //     // Determine if Theta or Phi varies more significantly
-  //     const varying = thetaValues.size > phiValues.size ? "Theta" : "Phi";
-  //     const steps = varying === "Theta" ? phiValues.size : thetaValues.size;
-
-  //     return {
-  //       varying,
-  //       steps, // This represents how many distinct values are there for the less varying angle
-  //     };
-  //   }
   function analyzeVariation(data) {
     const thetaValues = new Set();
     const phiValues = new Set();
@@ -203,7 +182,7 @@ export default function TestMesh({ pol, selectedData, showPower }) {
     camera.position.set(50, 50, 50);
 
     const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(550, 500);
+    renderer.setSize(650, 600);
     containerRef.current.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);

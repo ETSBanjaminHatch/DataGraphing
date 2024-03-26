@@ -15,6 +15,10 @@ export default function Form({
   selectedData,
   setSelectedDatasetIndex,
   selectedDatasetIndex,
+  graphType,
+  setGraphType,
+  zeroAngle,
+  setZeroAngle,
 }) {
   const frequencyOptions = Object.keys(
     formattedData[selectedDatasetIndex]?.["Phi"] || {}
@@ -62,6 +66,56 @@ export default function Form({
           >
             Table
           </button>
+          {selectedView === "graph" && (
+            <>
+              <div className="graph-choice-wrapper">
+                <button
+                  className={`graph-option-button ${
+                    graphType === "3D" ? "graph-option-selected" : ""
+                  }`}
+                  onClick={() => setGraphType("3D")}
+                >
+                  3D
+                </button>
+                <button
+                  className={`graph-option-button ${
+                    graphType === "polar" ? "graph-option-selected" : ""
+                  }`}
+                  onClick={() => setGraphType("polar")}
+                >
+                  Polar
+                </button>
+                <button
+                  className={`graph-option-button ${
+                    graphType === "line" ? "graph-option-selected" : ""
+                  }`}
+                  onClick={() => setGraphType("line")}
+                >
+                  Line
+                </button>
+              </div>
+              {(graphType === "polar" || graphType === "line") && (
+                <div className="angle-choice-wrapper">
+                  <button
+                    className={`angle-choice-button ${
+                      zeroAngle === "phi" ? "angle-choice-selected" : ""
+                    }`}
+                    onClick={() => setZeroAngle("phi")}
+                  >
+                    Phi
+                  </button>
+                  <button
+                    className={`angle-choice-button ${
+                      zeroAngle === "theta" ? "angle-choice-selected" : ""
+                    }`}
+                    onClick={() => setZeroAngle("theta")}
+                  >
+                    Theta
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
         <div className="data-selection-wrapper">
           <button

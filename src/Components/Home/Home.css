@@ -8,6 +8,7 @@
 
 .data-wrapper {
   display: flex;
+  justify-content: space-evenly;
 }
 
 .icon-wrapper {

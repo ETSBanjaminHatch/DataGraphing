@@ -26,7 +26,6 @@
 .frequency-selection {
   margin-top: 20px;
   display: flex;
-  align-items: center;
   color: rgb(12, 12, 12);
 }
 
@@ -107,4 +106,37 @@
 .data-selected {
   background-color: red;
   color: white;
+}
+
+.graph-choice-wrapper {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.graph-option-button {
+  width: 100px;
+  background-color: antiquewhite;
+}
+
+.angle-choice-wrapper {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+}
+
+.graph-option-selected {
+  background-color: rgb(148, 172, 248);
+  color: rgb(8, 8, 8);
+}
+
+.angle-choice-button {
+  width: 100px;
+  background-color: antiquewhite;
+  margin: 5px;
+}
+
+.angle-choice-selected {
+  background-color: rgb(148, 172, 248);
+  color: rgb(8, 8, 8);
 }
