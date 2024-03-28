@@ -1,6 +1,8 @@
 .parameters-wrapper {
   display: flex;
-  margin-left: 550px;
+  border: 1px solid black;
+  height: 750px;
+  width: 1000px;
 }
 
 .params-button {
@@ -17,12 +19,12 @@
 
 .details-wrapper {
   padding: 10px;
-  border-left: 1px solid #ddd;
+  border-left: 1px solid #0c0c0c;
   margin-left: 20px;
 }
 
 h2 {
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #0f0f0f;
 }
 
 ul {

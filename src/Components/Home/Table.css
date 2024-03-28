@@ -10,7 +10,7 @@ table {
   border-collapse: collapse;
   width: auto; /* Adjust based on layout */
   table-layout: fixed;
-  font-size: 10px; /* Slightly reduced font size */
+  font-size: 14px; /* Slightly reduced font size */
   background-color: white;
   color: black;
 }

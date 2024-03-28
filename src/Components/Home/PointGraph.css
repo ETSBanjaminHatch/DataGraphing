@@ -8,3 +8,16 @@
   justify-content: center;
   color: rgb(238, 29, 29);
 }
+
+.tooltip {
+  position: absolute;
+  top: 0;
+  right: 50px;
+  background-color: #f9f9f9;
+  border: 1px solid #d4d4d4;
+  border-radius: 5px;
+  padding: 5px;
+  font-size: 14px;
+  color: rgb(150, 108, 108);
+  pointer-events: none;
+}

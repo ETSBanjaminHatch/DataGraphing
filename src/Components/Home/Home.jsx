@@ -12,6 +12,8 @@ import TestSelection from "./TestSelection";
 import TestMesh from "./TestMesh";
 import PolarLineGraph from "./PolarGraph";
 import D3PolarLineGraph from "./D3PolarLineGraph";
+import RotatingObject from "./RotatingObject";
+import LineGraph from "./LineGraph";
 
 //Home landing page that will show the form for graph selections and graphs.
 export default function Home() {
@@ -28,9 +30,11 @@ export default function Home() {
   const [tableData, setTableData] = useState(null);
   const [zeroAngle, setZeroAngle] = useState("theta");
   const [graphType, setGraphType] = useState("3D");
+  const [zeroAngleValue, setZeroAngleValue] = useState(0);
+  const [frequencies, setFrequencies] = useState(null);
 
   const polarizations = ["Theta", "Phi", "Total"];
-
+  console.log("ALL FREQUENCIES STATE", frequencies);
   const newprocessDataArray = (allData) => {
     const result = allData.map((dataArray) => {
       const tempResult = {};
@@ -89,22 +93,36 @@ export default function Home() {
 
   useEffect(() => {
     const fetchParams = async () => {
+      console.log("FETCH PARAMS IN HOME");
+      console.log(selectedTest);
+      console.log(rawData);
+      if (!selectedTest || rawData.length < 1) {
+        console.log("IN IF STATEMETN");
+        // Handle the case where no test is selected (maybe clear paramsData or set an error)
+        // setParamsData(null);
+        return;
+      }
+      console.log("PASSSWED IF STATEMNT!!!");
       try {
-        const response = await fetch("/api/testparams");
+        // Adjust this URL to match your API's endpoint for fetching params by test ID
+        const response = await fetch(`/api/testparams/${selectedTest}`);
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
         const data = await response.json();
-        const testList = data.map((test) => test._id);
 
         setParamsData(data);
       } catch (error) {
-        console.error("There was an error fetching the data:", error);
+        console.error(
+          "There was an error fetching the test parameters:",
+          error
+        );
+        setParamsData(null); // Optionally clear paramsData on error
       }
     };
 
     fetchParams();
-  }, []);
+  }, [selectedTest, rawData]); // Rerun this effect when selectedTest changes
 
   function togglePower() {
     const changedPower = !showPower;
@@ -120,8 +138,10 @@ export default function Home() {
     const initialPolarizationData = selectedData["Theta"];
 
     if (initialPolarizationData) {
+      const allFrequencies = Object.keys(initialPolarizationData);
+      console.log("ALL FREQ", allFrequencies);
       const firstFrequency = Object.keys(initialPolarizationData)[0];
-
+      setFrequencies(allFrequencies);
       setSelectedFrequency(firstFrequency);
     }
   }, [formattedData]);
@@ -198,9 +218,15 @@ export default function Home() {
           setNoTestWarning={setNoTestWarning}
         />
       </div>
-      {selectedData && (
+      {rawData.length < 1 && (
+        <div className="rotate-object-wrapper">
+          <RotatingObject />
+        </div>
+      )}
+      {rawData.length > 1 && (
         <div className="form-data-wrapper">
           <Form
+            selectedData={selectedData}
             selectedFrequency={selectedFrequency}
             changeFrequency={changeFrequency}
             formattedData={formattedData}
@@ -216,6 +242,8 @@ export default function Home() {
             setGraphType={setGraphType}
             zeroAngle={zeroAngle}
             setZeroAngle={setZeroAngle}
+            zeroAngleValue={zeroAngleValue}
+            setZeroAngleValue={setZeroAngleValue}
           />
           <div className="data-wrapper">
             {selectedView === "parameters" && paramsData && (
@@ -231,7 +259,7 @@ export default function Home() {
 
                 if (graphType === "3D") {
                   return (
-                    <TestMesh
+                    <ThreejsMesh
                       key={pol}
                       pol={pol}
                       selectedData={dataForPolarization}
@@ -245,10 +273,23 @@ export default function Home() {
                       pol={pol}
                       zeroAngle={zeroAngle}
                       selectedData={dataForPolarization}
+                      zeroAngleValue={zeroAngleValue}
+                      setZeroAngleValue={setZeroAngleValue}
+                      formattedData={formattedData[selectedDatasetIndex][pol]}
+                    />
+                  );
+                } else if (graphType === "line") {
+                  return (
+                    <LineGraph
+                      pol={pol}
+                      selectedDatasetIndex={selectedDatasetIndex}
+                      formattedData={formattedData}
+                      frequencies={frequencies}
+                      zeroAngleValue={zeroAngleValue}
+                      zeroAngle={zeroAngle}
                     />
                   );
                 }
-                return null;
               })}
             {selectedView === "table" && selectedData && selectedFrequency && (
               <Table

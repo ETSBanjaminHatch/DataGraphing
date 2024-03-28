@@ -1,33 +1,73 @@
 import Plot from "react-plotly.js";
 
-export default function PolarLineGraph({ selectedData, zeroAngle, pol }) {
+export default function PolarLineGraph({
+  selectedData,
+  zeroAngle,
+  pol,
+  zeroAngleValue,
+  formattedData,
+}) {
+  console.log("formattedData IN POLAR ", formattedData);
+  const freqKeys = Object.keys(formattedData);
+  console.log("FREQ KEYS : ", freqKeys);
   const mappedAngle = zeroAngle === "phi" ? "theta" : "phi";
   const angleLabel = zeroAngle === "phi" ? "Theta" : "Phi";
-  const filteredData = selectedData.filter((d) => d[zeroAngle] === 0);
+  const filteredData = selectedData.filter(
+    (d) => d[zeroAngle] === zeroAngleValue
+  );
+  console.log("POL", pol);
+  console.log("filteredData IN POLAR", filteredData);
   const theta = filteredData.map((d) => d[mappedAngle]);
   const r = filteredData.map((d) => d.power);
+  const allR = selectedData.map((d) => d.power);
+  const maxR = Math.max(...r);
+  const minR = Math.min(...r);
+  console.log("minR: ,", minR);
+  console.log("MaxR ", maxR);
+  const data = [
+    {
+      type: "scatterpolar",
+      mode: "lines",
+      r,
+      theta,
+      fill: "none",
+      line: {
+        color: "blue",
+      },
+    },
+  ];
+  // const dataSeries = Object.entries(formattedData).map(([frequency, data]) => {
+  //   const filteredData = data.filter((d) => d[zeroAngle] === zeroAngleValue);
+  //   const theta = filteredData.map((d) => d[mappedAngle]);
+  //   const r = filteredData.map((d) => d.power);
+
+  //   return {
+  //     type: "scatterpolar",
+  //     mode: "lines",
+  //     r,
+  //     theta,
+  //     name: `Frequency ${frequency} MHz`,
+  //     fill: "none",
+  //   };
+  // });
+
+  //
+  // const maxR = Math.max(
+  //   ...Object.values(formattedData)
+  //     .flat()
+  //     .map((d) => d.power)
+  // );
 
   return (
     <Plot
-      data={[
-        {
-          type: "scatterpolar",
-          mode: "lines",
-          r: r,
-          theta: theta,
-          fill: "none",
-          line: {
-            color: "blue",
-          },
-        },
-      ]}
+      data={data}
       layout={{
         width: 650,
         height: 550,
         polar: {
           radialaxis: {
             visible: true,
-            range: [0, Math.max(...r) + Math.max(...r) * 0.2],
+            range: [minR, maxR],
           },
           angularaxis: {
             tickmode: "array",

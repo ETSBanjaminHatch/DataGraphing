@@ -39,6 +39,7 @@
 }
 
 .view-selection {
+  width: 750px;
   margin-top: 20px;
   margin-left: 170px;
 }
@@ -139,4 +140,8 @@
 .angle-choice-selected {
   background-color: rgb(148, 172, 248);
   color: rgb(8, 8, 8);
+}
+
+.angle-readout {
+  margin-left: 10px;
 }

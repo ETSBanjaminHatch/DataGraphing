@@ -115,8 +115,7 @@ export default function TestMesh({ pol, selectedData, showPower }) {
       thetaSteps.add(point.theta);
       phiSteps.add(point.phi);
     });
-    console.log("THETA", thetaValues.size);
-    console.log("PHI", phiValues.size);
+
     if (thetaValues.size > phiValues.size) {
       return { varying: "Theta", steps: thetaSteps.size };
     } else {
@@ -266,7 +265,7 @@ export default function TestMesh({ pol, selectedData, showPower }) {
     let newPoints = filteredData.map(
       (d) => new PointRThetaPhi(d.phi, d.theta, d.power)
     );
-    console.log("SELECTED DATA", selectedData);
+
     const powers = newPoints.map((p) => p.radius);
     const minPower = Math.min(...powers);
     const maxPower = Math.max(...powers);
@@ -287,7 +286,6 @@ export default function TestMesh({ pol, selectedData, showPower }) {
     }
 
     let interP = newPoints;
-    console.log("INTERP", interP);
 
     if (pol === "Total") {
       minR = 0;
