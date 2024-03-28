@@ -145,3 +145,7 @@
 .angle-readout {
   margin-left: 10px;
 }
+
+.hidden-content {
+  visibility: hidden;
+}

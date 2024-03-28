@@ -130,6 +130,7 @@ export default function Home() {
   }
 
   function changeFrequency(selection) {
+    console.log("CHANGE FREQUENCY", selection);
     setSelectedFrequency(selection);
   }
 

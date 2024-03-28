@@ -203,7 +203,7 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
       if (surfaceRef.current) {
         const intersects = raycaster.intersectObject(surfaceRef.current);
 
-        if (intersects.length > 0) {
+        if (intersects.length > 0 && intersects[0].face) {
           const index = intersects[0].face.a;
 
           const powerValue =
@@ -288,7 +288,6 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
       minR = 0;
     }
 
-    const vertices = [];
     const colors = [];
     interP.forEach((point) => {
       const color = getColorForValue(point.radius + minR, minPower, maxPower);

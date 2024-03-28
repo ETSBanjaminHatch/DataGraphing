@@ -55,11 +55,15 @@ export default function Form({
   return (
     <div className="form-wrapper">
       <div className="selections-wrapper">
-        <div className="frequency-selection">
+        <div
+          className={`frequency-selection ${
+            graphType === "line" ? "hidden-content" : ""
+          }`}
+        >
           <h3 className="frequency-label">Frequency (MHz):</h3>
           <select
             className="frequency-dropdown"
-            value={zeroAngleValue}
+            value={selectedFrequency}
             onChange={(e) => changeFrequency(e.target.value)}
           >
             {frequencyOptions}
