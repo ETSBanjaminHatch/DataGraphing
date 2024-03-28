@@ -64,7 +64,7 @@ export default function LineGraph({
   return (
     <Plot
       data={data}
-      layout={{ width: 720, height: 440, title: `${pol} Polarization` }}
+      layout={{ width: 760, height: 500, title: `${pol} Polarization` }}
     />
   );
 }
