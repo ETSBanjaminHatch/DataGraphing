@@ -49,8 +49,8 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
     return sprite;
   }
 
-  function addAxisLinesAndLabels(scene) {
-    const axisLength = 50;
+  function addAxisLinesAndLabels(scene, inputLength) {
+    const axisLength = inputLength;
     const axisMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
 
     // X Axis
@@ -99,6 +99,71 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
     scene.add(zLabel);
   }
 
+  function analyzeVariation(data) {
+    const thetaValues = new Set();
+    const phiValues = new Set();
+
+    // Collect unique theta and phi values
+    data.slice(0, 15).forEach((point) => {
+      thetaValues.add(point.theta);
+      phiValues.add(point.phi);
+    });
+    const thetaSteps = new Set();
+    const phiSteps = new Set();
+    data.forEach((point) => {
+      thetaSteps.add(point.theta);
+      phiSteps.add(point.phi);
+    });
+
+    if (thetaValues.size > phiValues.size) {
+      return { varying: "Theta", steps: thetaSteps.size };
+    } else {
+      return { varying: "Phi", steps: phiSteps.size };
+    }
+  }
+  function generateIndices(data) {
+    const { varying, steps } = analyzeVariation(data);
+    const indices = [];
+
+    if (varying === "Phi") {
+      const thetaLevels = new Set(data.map((d) => d.theta)).size;
+      const phiLevels = data.length / thetaLevels;
+      for (let t = 0; t < thetaLevels - 1; t++) {
+        for (let p = 0; p < phiLevels; p++) {
+          const current = t * phiLevels + p;
+          const next = current + phiLevels;
+
+          // Connect the dots to form two triangles for each square in the grid
+          indices.push(current, next, ((p + 1) % phiLevels) + t * phiLevels);
+          indices.push(
+            ((p + 1) % phiLevels) + t * phiLevels,
+            next,
+            ((p + 1) % phiLevels) + (t + 1) * phiLevels
+          );
+        }
+      }
+    } else {
+      // Assuming Phi varies for every Theta (This case should be adjusted based on your actual data structure)
+      const phiLevels = steps;
+      const thetaLevels = data.length / phiLevels;
+      for (let t = 0; t < thetaLevels - 1; t++) {
+        for (let p = 0; p < phiLevels; p++) {
+          const current = t * phiLevels + p;
+          const next = current + phiLevels;
+
+          indices.push(current, next, ((p + 1) % phiLevels) + t * phiLevels);
+          indices.push(
+            ((p + 1) % phiLevels) + t * phiLevels,
+            next,
+            ((p + 1) % phiLevels) + (t + 1) * phiLevels
+          );
+        }
+      }
+    }
+
+    return indices;
+  }
+
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -115,15 +180,13 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
     camera.position.set(50, 50, 50);
 
     const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(550, 500);
+    renderer.setSize(650, 600);
     containerRef.current.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
     controls.enableZoom = true;
-
-    addAxisLinesAndLabels(scene);
 
     const onMouseMove = (event) => {
       const rect = renderer.domElement.getBoundingClientRect();
@@ -194,18 +257,8 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
   }, []);
 
   useEffect(() => {
-    if (!sceneRef.current) return;
-    if (!selectedData) return;
-
-    const geometry = new THREE.BufferGeometry();
-    if (surfaceRef.current) {
-      sceneRef.current.remove(surfaceRef.current);
-      surfaceRef.current.geometry.dispose();
-      surfaceRef.current.material.dispose();
-    }
-    console.log("SELECTED DATA IN MESH", selectedData);
+    if (!sceneRef.current || !selectedData) return;
     const filteredData = filterOutliers(selectedData, 7.5);
-
     let newPoints = filteredData.map(
       (d) => new PointRThetaPhi(d.phi, d.theta, d.power)
     );
@@ -215,7 +268,6 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
     const maxPower = Math.max(...powers);
     setMinPower(Math.min(...powers));
     setMaxPower(Math.max(...powers));
-
     let minR = Infinity;
     newPoints.forEach((point) => {
       if (point.radius < minR) {
@@ -231,11 +283,12 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
     }
 
     let interP = newPoints;
-    console.log("INTERP", interP);
 
     if (pol === "Total") {
       minR = 0;
     }
+
+    const vertices = [];
     const colors = [];
     interP.forEach((point) => {
       const color = getColorForValue(point.radius + minR, minPower, maxPower);
@@ -246,43 +299,39 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
 
     powerMappingRef.current = newPowerMapping;
 
-    let cartesianData = interP
-      .map((point) => {
-        const r = point.radius;
-        const thetaRadians = THREE.MathUtils.degToRad(point.theta);
-        const phiRadians = THREE.MathUtils.degToRad(point.phi);
-        const x = r * Math.sin(thetaRadians) * Math.cos(phiRadians);
-        const y = r * Math.sin(thetaRadians) * Math.sin(phiRadians);
-        const z = r * Math.cos(thetaRadians);
-        return [x, y, z];
-      })
-      .flat();
-    const vertices = new Float32Array(cartesianData);
+    let cartesianData = interP.map((point) => {
+      const phiRad = THREE.MathUtils.degToRad(point.phi);
+      const thetaRad = THREE.MathUtils.degToRad(point.theta);
+      const x = point.radius * Math.sin(thetaRad) * Math.cos(phiRad);
+      const y = point.radius * Math.sin(thetaRad) * Math.sin(phiRad);
+      const z = point.radius * Math.cos(thetaRad);
 
-    geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
-
-    const gridHeight = 39;
-    const gridWidth = 73;
-    const indices = [];
-    for (let i = 0; i < gridHeight - 1; i++) {
-      for (let j = 0; j < gridWidth - 1; j++) {
-        const a = i * gridWidth + j;
-        const b = a + gridWidth;
-        const c = a + 1;
-        const d = b + 1;
-
-        indices.push(a, b, d);
-
-        indices.push(d, c, a);
-      }
-    }
-    geometry.setIndex(indices);
-    geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
-
-    const material = new THREE.MeshBasicMaterial({
-      side: THREE.DoubleSide,
-      vertexColors: true,
+      return [x, y, z];
     });
+
+    let maxDistance = 0;
+    cartesianData.forEach(([x, y, z]) => {
+      const distance = Math.sqrt(x * x + y * y + z * z);
+      if (distance > maxDistance) {
+        maxDistance = distance;
+      }
+    });
+    const axisLength = maxDistance * 1.1;
+    addAxisLinesAndLabels(sceneRef.current, axisLength);
+    const indices = generateIndices(interP);
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(cartesianData.flat(), 3)
+    );
+    geometry.setAttribute(
+      "color",
+      new THREE.Float32BufferAttribute(colors.flat(), 3)
+    );
+
+    geometry.setIndex(indices);
+
     const wireframeGeometry = new THREE.WireframeGeometry(geometry);
     const wireframeMaterial = new THREE.LineBasicMaterial({
       color: 0x000000,
@@ -293,10 +342,22 @@ export default function ThreejsMesh({ pol, selectedData, showPower }) {
       wireframeMaterial
     );
 
-    const surface = new THREE.Mesh(geometry, material);
+    // Removes previous mesh from the scene and disposes of its resources
+    if (surfaceRef.current) {
+      sceneRef.current.remove(surfaceRef.current);
+      surfaceRef.current.geometry.dispose();
+      surfaceRef.current.material.dispose();
+    }
 
+    // Creates the new mesh with vertex colors and adds it to the scene
+    const material = new THREE.MeshBasicMaterial({
+      side: THREE.DoubleSide,
+      vertexColors: true,
+    });
+    const surface = new THREE.Mesh(geometry, material);
     surface.add(wireframe);
     sceneRef.current.add(surface);
+
     surfaceRef.current = surface;
   }, [selectedData]);
 

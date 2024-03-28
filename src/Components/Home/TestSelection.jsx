@@ -10,24 +10,6 @@ export default function TestSelection({
 }) {
   const [tests, setTests] = useState([]);
 
-  //   async function fetchTestData() {
-  //     if (!selectedTest) {
-  //       setNoTestWarning(true);
-  //       return;
-  //     }
-  //     setNoTestWarning(false);
-
-  //     try {
-  //       const response = await fetch(`/api/documents/${selectedTest}`);
-  //       if (!response.ok) {
-  //         throw new Error("Network response was not ok");
-  //       }
-  //       const data = await response.json();
-  //       console.log(data);
-  //     } catch (error) {
-  //       console.log("ERROR FETCHING DATA", error);
-  //     }
-  //   }
   useEffect(() => {
     console.log("TEST");
     const fetchParams = async () => {

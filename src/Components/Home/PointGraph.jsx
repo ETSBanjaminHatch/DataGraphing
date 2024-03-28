@@ -126,7 +126,7 @@ export default function PointGraph({ selectedData, pol }) {
   function createTextLabel(text, position) {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
-    context.font = "36px Arial";
+    context.font = "48px Arial";
     context.fillStyle = "white";
     context.fillText(text, 0, 36);
 
@@ -140,8 +140,8 @@ export default function PointGraph({ selectedData, pol }) {
     return sprite;
   }
 
-  function addAxisLinesAndLabels(scene) {
-    const axisLength = 50;
+  function addAxisLinesAndLabels(scene, axLength) {
+    const axisLength = axLength;
     const axisMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
 
     // X Axis
@@ -276,6 +276,15 @@ export default function PointGraph({ selectedData, pol }) {
       return [x, y, z];
     });
 
+    let maxDistance = 0;
+    cartesianData.forEach(([x, y, z]) => {
+      const distance = Math.sqrt(x * x + y * y + z * z);
+      if (distance > maxDistance) {
+        maxDistance = distance;
+      }
+    });
+    const axisLength = maxDistance * 1.1;
+    addAxisLinesAndLabels(sceneRef.current, axisLength);
     let newcartesianData = cartesianData.flat();
 
     geometry.setAttribute(

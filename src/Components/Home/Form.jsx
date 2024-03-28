@@ -1,6 +1,7 @@
 import "./Form.css";
 import logo from "../../assets/logo.png";
 import ReactSwitch from "react-switch";
+import { useState } from "react";
 
 export default function Form({
   selectedFrequency,
@@ -19,14 +20,37 @@ export default function Form({
   setGraphType,
   zeroAngle,
   setZeroAngle,
+  zeroAngleValue,
+  setZeroAngleValue,
 }) {
-  const frequencyOptions = Object.keys(
-    formattedData[selectedDatasetIndex]?.["Phi"] || {}
-  ).map((frequency) => (
-    <option key={frequency} value={frequency}>
-      {frequency}
-    </option>
-  ));
+  const frequencyOptions = Object.keys(selectedData?.["Phi"] || {}).map(
+    (frequency) => (
+      <option key={frequency} value={frequency}>
+        {frequency}
+      </option>
+    )
+  );
+  const graphedAngle = zeroAngle === "theta" ? "phi" : "theta";
+  const capitalizedZeroAngle =
+    zeroAngle.charAt(0).toUpperCase() + zeroAngle.slice(1);
+
+  const filteredData =
+    selectedData && selectedData["Phi"]
+      ? selectedData["Phi"][selectedFrequency]?.filter(
+          (d) => d[graphedAngle] === 0
+        )
+      : [];
+
+  const maxVaryingAngle =
+    filteredData?.length > 0
+      ? Math.max(...filteredData.map((item) => item[zeroAngle]))
+      : 0;
+
+  const varyingStepValue = maxVaryingAngle / (filteredData?.length - 1);
+
+  const handleChange = (event) => {
+    setZeroAngleValue(parseInt(event.target.value));
+  };
 
   return (
     <div className="form-wrapper">
@@ -35,7 +59,7 @@ export default function Form({
           <h3 className="frequency-label">Frequency (MHz):</h3>
           <select
             className="frequency-dropdown"
-            value={selectedFrequency}
+            value={zeroAngleValue}
             onChange={(e) => changeFrequency(e.target.value)}
           >
             {frequencyOptions}
@@ -96,11 +120,15 @@ export default function Form({
               </div>
               {(graphType === "polar" || graphType === "line") && (
                 <div className="angle-choice-wrapper">
+                  <h3>Varying angle: </h3>
                   <button
                     className={`angle-choice-button ${
                       zeroAngle === "phi" ? "angle-choice-selected" : ""
                     }`}
-                    onClick={() => setZeroAngle("phi")}
+                    onClick={() => {
+                      setZeroAngle("phi");
+                      setZeroAngleValue(0);
+                    }}
                   >
                     Phi
                   </button>
@@ -108,10 +136,26 @@ export default function Form({
                     className={`angle-choice-button ${
                       zeroAngle === "theta" ? "angle-choice-selected" : ""
                     }`}
-                    onClick={() => setZeroAngle("theta")}
+                    onClick={() => {
+                      setZeroAngle("theta");
+                      setZeroAngleValue(0);
+                    }}
                   >
                     Theta
                   </button>
+                  <input
+                    type="range"
+                    min={0}
+                    max={maxVaryingAngle}
+                    value={zeroAngleValue}
+                    onChange={handleChange}
+                    step={varyingStepValue}
+                    style={{ width: "100%" }}
+                  />
+
+                  <p className="angle-readout">{`${
+                    zeroAngle.charAt(0).toUpperCase() + zeroAngle.slice(1)
+                  } ${zeroAngleValue} °`}</p>
                 </div>
               )}
             </>
